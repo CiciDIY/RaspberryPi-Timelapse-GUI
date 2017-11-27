@@ -1,5 +1,11 @@
 
 import wx
+import pygame, sys
+from pygame.locals import *
+import pygame.camera
+import picamera
+import time
+import os
 
 class MainWindow(wx.Frame):
     def __init__(self, parent, title):
@@ -40,15 +46,40 @@ class SetUpPanel (wx.Panel):
         #Creating visuals
         Settings_label = wx.StaticText(self, wx.ID_ANY, "Settings")
         photo_button = wx.Button(self, wx.ID_ANY, "Photo")
+        photo_button.Bind(wx.EVT_BUTTON, self.phototaking)
+        stop_button = wx.Button(self, wx.ID_ANY, "Stop")
+        stop_button.Bind(wx.EVT_BUTTON, self.phototaking)
 
         #Adding visuals to sizers
         Overal_sizer = wx.BoxSizer(wx.VERTICAL)
-        Overal_sizer.Add(Settings_label,0, wx.ALL,5)
-        Overal_sizer.Add(photo_button,0, wx.ALL,5)
+        setting_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        button_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        setting_sizer.Add(Settings_label,0, wx.ALL,5)
+        button_sizer.Add(photo_button,0, wx.ALL,5)
+        button_sizer.Add(stop_button,0, wx.ALL,5)
+
+        Overal_sizer.Add(setting_sizer,0, wx.ALL|wx.CENTRE, 5)
+        Overal_sizer.Add(button_sizer,0, wx.ALL|wx.CENTRE, 5)
 
         self.SetSizer(Overal_sizer)
         Overal_sizer.Fit(self)
         self.Centre()
+
+    def phototaking(self,event):
+        camera = picamera.PiCamera()
+        camera.resolution = (2592, 1944)
+        camera.drc_strength = 'high'
+        filename = 'Timelapse.jpg'
+        
+        npath ="/home/pi/" + str(filename)
+        if not os.path.isdir(npath):
+            os.makedirs(npath)
+        time_of_lapse = 100
+        while time_of_lapse > 0:
+            camera.capture(npath + "/" + str(time_of_lapse) + filename)
+            time_of_lapse = time_of_lapse - 1
+        camera.close()
+        
 
 app = wx.App(False)
 frame = MainWindow(None, "Sample editor")
